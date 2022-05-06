@@ -77,8 +77,11 @@ class Users(Resource):
 		if args:
 			data = read_database_file("./data/users.db", "users", args)
 			if data:
+				print(f"Succesful 200 in GET request: {data}")
 				return {"data": data}, 200
+			print(f"Error 404 in GET request: {args['email']} does not exist")
 			return {"message": f"{args['email']} does not exist"}, 404
+		print("Error 409 in GET request: An email is required")
 		return {"message": "An email is required"}, 409
 
 	def post(self):
@@ -91,13 +94,13 @@ class Users(Resource):
 
 		data = read_database_file("./data/users.db", "users", {"email": args["email"]})
 		if data:
+			print(f"Error 409 in POST request: {args['email']} already exists")
 			return {
 				"message": f"{args['email']} already exists"
 			}, 409
 
 		data = args["name"], args["email"], args["profile_picture"]
-		# write_database_file("./data/users.db", "users", data)
-		# return {"message": f"{(args['name'], args['email'], args['profile_picture'])}".replace("None", "NULL")}, 200
+
 		write_database_file(
 			"./data/users.db",
 			"users",
@@ -109,7 +112,8 @@ class Users(Resource):
 		# 	"email":           args["email"],
 		# 	"profile_picture": args["profile_picture"],
 		# }, 200
-		return {"message": "New user created"}
+		print("Succesful 200 in POST request: New user created")
+		return {"message": "New user created"}, 200
 
 class Reviews(Resource):
 	def get(self):
