@@ -16,6 +16,7 @@ import sqlite3
 from contextlib import closing
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
+from waitress import serve
 
 
 app = Flask(__name__)
@@ -70,9 +71,8 @@ class Users(Resource):
 
 	def get(self):
 		parser = reqparse.RequestParser()
-		parser.add_argument("email", required=False, type=str, help="Email of the user", location="args")
-		parser.add_argument("name", required=False, type=str, help="Real name of the user", location="args")
-		print("GET")
+		parser.add_argument("email", required=False, type=str, location="args")
+		parser.add_argument("name", required=False, type=str, location="args")
 		args = parser.parse_args()
 		if args:
 			data = read_database_file("./data/users.db", "users", args)
@@ -83,7 +83,7 @@ class Users(Resource):
 
 	def post(self):
 		parser = reqparse.RequestParser()
-		parser.add_argument("name", required=True, type=str, help="Real name of the user", location="args")
+		parser.add_argument("name", required=True, type=str, location="args")
 		parser.add_argument("email", required=True, type=str, location="args")
 		parser.add_argument("profile_picture", required=False, type=str, location="args")
 		args = parser.parse_args()
@@ -97,17 +97,19 @@ class Users(Resource):
 
 		data = args["name"], args["email"], args["profile_picture"]
 		# write_database_file("./data/users.db", "users", data)
+		# return {"message": f"{(args['name'], args['email'], args['profile_picture'])}".replace("None", "NULL")}, 200
 		write_database_file(
 			"./data/users.db",
 			"users",
-			f"('{args['name']}', '{args['email']}', "+f"'{args['profile_picture']}')" if
+			f"{(args['name'], args['email'], args['profile_picture'])}".replace("None", "NULL")
 		)
 
-		return {
-			"name":            args["name"],
-			"email":           args["email"],
-			"profile_picture": args["profile_picture"],
-		}, 200
+		# return {
+		# 	"name":            args["name"],
+		# 	"email":           args["email"],
+		# 	"profile_picture": args["profile_picture"],
+		# }, 200
+		return {"message": "New user created"}
 
 class Reviews(Resource):
 	def get(self):
@@ -120,7 +122,8 @@ class Reviews(Resource):
 def main():
 	api.add_resource(Users, "/users")
 	api.add_resource(Reviews, "/reviews")
-	app.run(debug=True)
+	serve(app, host="0.0.0.0", port=8080)
+	# app.run()
 
 
 if __name__ == "__main__":
