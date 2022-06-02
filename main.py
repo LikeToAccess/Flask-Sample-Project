@@ -15,12 +15,14 @@ import json
 import sqlite3
 from contextlib import closing
 from flask import Flask
+from flask_cors import CORS
 from flask_restful import Resource, Api, reqparse
 from waitress import serve
 
 
 app = Flask(__name__)
 api = Api(app)
+CORS(app, resources={r"*": {"origins": "*"}})
 
 
 def read_json_file(filename, encoding="utf8"):
